@@ -28,25 +28,79 @@ export enum MathFunction {
     QUARTILE = 'QUARTILE',
 }
 
-export class MathArgument {
+export enum MathFunctionActionPreposition {
+    ADD = 'to',
+    SUBTRACT = 'from',
+    MULTIPLY = 'by',
+    DIVIDE = 'by',
+    POWER = 'to the power of',
+    SQRT = 'to the square root of',
+    LOG = 'to the base of',
+    LN = 'to the base of',
+    EXP = 'to the power of',
+    ABS = 'of',
+    SIN = 'of',
+    COS = 'of',
+    TAN = 'of',
+    ASIN = 'of',
+    ACOS = 'of',
+    ATAN = 'of',
+    CEIL = 'of',
+    FLOOR = 'of',
+    ROUND = 'of',
+    MAX = 'of',
+    MIN = 'of',
+    STANDARD_DEVIATION = 'of',
+    VARIANCE = 'of',
+    MEDIAN = 'of',
+    PERCENTILE = 'of',
+    QUARTILE = 'of',
+}
+
+export interface MathArgument {
     term: string;
     value: number;
 }
 
-export class ComputeElement {
+export interface ComputeElement {
     mathFunction: MathFunction;
     arguments: MathArgument[];
     returnValue?: MathArgument;
 }
 
 export class Formula {
-    public terms = new Map<string, string>();
     public flow: ComputeElement[] = [];
 
-    public addComputeElement() {}
+    public addComputeElement(computeElement: ComputeElement) {
+        this.flow.push(computeElement);
+    }
 
-    public symbolicComputation(): string {
-        return '';
+    public getSymbolicComputation(): string {
+        let output = '';
+        let lastResult;
+
+        for (const element of this.flow) {
+            output +=  `${element.returnValue?.term || 'result' } = ` + element.mathFunction + '(';
+
+            for (const argument of element.arguments) {
+                output += argument.term + ',';
+            }
+
+            output = output.slice(0, -1);
+            output += ')';
+
+            if (lastResult) {
+                output += ` ${MathFunctionActionPreposition[element.mathFunction]} ${lastResult}`;
+            }
+
+            lastResult = element.returnValue?.term || 'last result';
+
+            // output += ` = ${lastResult}`;
+
+            output += '\n';
+        }
+
+        return output;
     }
 
     public getFormula(formula: string): string {
@@ -141,3 +195,10 @@ export class Formula {
     public geometricMeanHarmonicHarmonicGeometric() {}
 
 }
+
+const formula = new Formula();
+
+formula.addComputeElement({ mathFunction: MathFunction.ADD, arguments: [ { term: 'x', value: 1 }, { term: 'y', value: 2 } ] });
+formula.addComputeElement({ mathFunction: MathFunction.SUBTRACT, arguments: [ { term: 'badx', value: 1 } ] });
+
+console.log(formula.getSymbolicComputation())
